@@ -11,6 +11,10 @@ class MoviesController < ApplicationController
     @ratings_to_show = params[:ratings]&.keys || @all_ratings
     @movies = Movie.with_ratings(@ratings_to_show)
     @ratings_to_show_hash = Hash[@ratings_to_show.collect { |rating| [rating, "1"] }]
+
+    @sort_column = params[:sort]
+    @movies = Movie.with_ratings(@ratings_to_show)
+    @movies = @movies.order(@sort_column) if @sort_column
   end
 
   def new
