@@ -1,2 +1,14 @@
-class Movie < ActiveRecord::Base
+class Movie < ApplicationRecord
+  def self.with_ratings(ratings_list)
+    if ratings_list.nil? || ratings_list.empty?
+      all
+    else
+      where(rating: ratings_list)
+    end
+  end
+
+  def self.all_ratings
+    %w[G PG PG-13 R]
+  end
 end
+
