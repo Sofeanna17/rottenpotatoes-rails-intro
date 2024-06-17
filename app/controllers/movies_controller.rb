@@ -1,5 +1,4 @@
 class MoviesController < ApplicationController
-
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -8,11 +7,31 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    @ratings_to_show = params[:ratings]&.keys || @all_ratings
-    @movies = Movie.with_ratings(@ratings_to_show)
+
+    # Retrieve ratings from params or session
+    if params[:ratings]
+      @ratings_to_show = params[:ratings].keys
+      session[:ratings] = params[:ratings]
+    elsif session[:ratings]
+      @ratings_to_show = session[:ratings].keys
+      params[:ratings] = session[:ratings]
+    else
+      @ratings_to_show = @all_ratings
+    end
+
+    # Retrieve sort column from params or session
+    if params[:sort]
+      @sort_column = params[:sort]
+      session[:sort] = params[:sort]
+    elsif session[:sort]
+      @sort_column = session[:sort]
+      params[:sort] = session[:sort]
+    end
+
+    # Convert @ratings_to_show to a hash for checkbox rendering
     @ratings_to_show_hash = Hash[@ratings_to_show.collect { |rating| [rating, "1"] }]
 
-    @sort_column = params[:sort]
+    # Fetch and sort movies based on ratings and sort column
     @movies = Movie.with_ratings(@ratings_to_show)
     @movies = @movies.order(@sort_column) if @sort_column
   end
@@ -46,9 +65,11 @@ class MoviesController < ApplicationController
   end
 
   private
+
   # Making "internal" methods private is not required, but is a common practice.
   # This helps make clear which methods respond to requests, and which ones do not.
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
 end
+
